@@ -245,8 +245,7 @@
 
 
 
-
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -470,10 +469,13 @@
         console.error("Error loading sheet data:", error);
       });
 
-    // PDF Export: hide heading during export
+    // PDF Export: hide heading and button during export
     document.getElementById("downloadBtn").addEventListener("click", () => {
       const heading = document.getElementById("pageTitle");
-      heading.style.display = "none"; // Hide title before exporting
+      const button = document.getElementById("downloadBtn");
+
+      heading.style.display = "none"; // Hide title
+      button.style.display = "none";  // Hide button
 
       const pdfTimestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const opt = {
@@ -485,7 +487,8 @@
       };
 
       html2pdf().from(document.body).set(opt).save().then(() => {
-        heading.style.display = "block"; // Restore title
+        heading.style.display = "block";  // Restore title
+        button.style.display = "block";   // Restore button
       });
     });
   </script>
