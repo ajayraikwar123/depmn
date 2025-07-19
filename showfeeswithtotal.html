@@ -19,7 +19,7 @@
       text-shadow: 1px 1px 2px #fff;
     }
 
-    #timestamp, #pdfTimestamp {
+    #timestamp {
       text-align: center;
       margin-bottom: 20px;
       font-size: 14px;
@@ -108,6 +108,14 @@
       color: #333;
     }
 
+    #pdfFooter {
+      display: none;
+      text-align: center;
+      margin-top: 30px;
+      font-size: 14px;
+      color: #555;
+    }
+
     @media (max-width: 768px) {
       th, td {
         padding: 10px;
@@ -134,11 +142,14 @@
       <img src="logo.jpg" alt="Logo">
       <h2>VIDYA DEP-MN 2025-26</h2>
     </div>
-    <div id="pdfTimestamp"></div>
   </div>
 
   <div id="tableContainer">
     <table id="sheet-data"></table>
+    <!-- PDF Footer -->
+    <div id="pdfFooter">
+      <span id="pdfFooterText"></span>
+    </div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -148,7 +159,6 @@
     const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
     let amountColumnIndex = -1;
 
-    // Set timestamp
     const now = new Date();
     const formattedDate = now.toLocaleString('en-IN', {
       dateStyle: 'medium',
@@ -156,7 +166,6 @@
     });
 
     document.getElementById("timestamp").textContent = `Report generated on: ${formattedDate}`;
-    document.getElementById("pdfTimestamp").textContent = `Report generated on: ${formattedDate}`;
 
     fetch(url)
       .then(res => res.text())
@@ -259,11 +268,15 @@
       const button = document.getElementById("downloadBtn");
       const timestamp = document.getElementById("timestamp");
       const pdfHeader = document.getElementById("pdfHeader");
+      const pdfFooter = document.getElementById("pdfFooter");
+      const pdfFooterText = document.getElementById("pdfFooterText");
 
       heading.style.display = "none";
       button.style.display = "none";
       timestamp.style.display = "none";
       pdfHeader.style.display = "block";
+      pdfFooter.style.display = "block";
+      pdfFooterText.textContent = `Report generated on: ${formattedDate}`;
 
       const today = new Date();
       const dd = String(today.getDate()).padStart(2, '0');
@@ -284,6 +297,7 @@
         button.style.display = "block";
         timestamp.style.display = "block";
         pdfHeader.style.display = "none";
+        pdfFooter.style.display = "none";
       });
     });
   </script>
