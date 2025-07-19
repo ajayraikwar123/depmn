@@ -86,6 +86,23 @@
       font-weight: bold;
     }
 
+    #pdfHeader {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    #pdfHeader img {
+      height: 60px;
+      float: left;
+    }
+
+    #pdfHeader h2 {
+      text-align: center;
+      margin: 0;
+      font-size: 22px;
+      color: #333;
+    }
+
     @media (max-width: 768px) {
       th, td {
         padding: 10px;
@@ -105,6 +122,12 @@
 
   <input type="text" id="searchInput" placeholder="🔍 Search table...">
   <button id="downloadBtn">📄 Download PDF</button>
+
+  <!-- Hidden header for PDF -->
+  <div id="pdfHeader">
+    <img src="https://via.placeholder.com/100x60?text=Logo" alt="Logo">
+    <h2>VIDYA DEP-MN 2025-26</h2>
+  </div>
 
   <div id="tableContainer">
     <table id="sheet-data"></table>
@@ -222,15 +245,18 @@
         console.error("Error loading sheet data:", error);
       });
 
-    // PDF Export: hide heading and button during export
+    // PDF Export with header only in PDF
     document.getElementById("downloadBtn").addEventListener("click", () => {
       const heading = document.getElementById("pageTitle");
       const button = document.getElementById("downloadBtn");
+      const timestamp = document.getElementById("timestamp");
+      const pdfHeader = document.getElementById("pdfHeader");
 
       heading.style.display = "none";
       button.style.display = "none";
+      timestamp.style.display = "none";
+      pdfHeader.style.display = "block";
 
-      // Generate filename as DEP_MN_Fees_Record_DD-MM-YYYY.pdf
       const today = new Date();
       const dd = String(today.getDate()).padStart(2, '0');
       const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -249,6 +275,8 @@
       html2pdf().from(document.body).set(opt).save().then(() => {
         heading.style.display = "block";
         button.style.display = "block";
+        timestamp.style.display = "block";
+        pdfHeader.style.display = "none";
       });
     });
   </script>
