@@ -61,6 +61,11 @@
       transition: background-color 0.3s;
     }
 
+    tr.total-row {
+      background-color: #fdf6e3;
+      font-weight: bold;
+    }
+
     @media (max-width: 768px) {
       th, td {
         padding: 10px;
@@ -83,8 +88,9 @@
 
 <script>
   const sheetID = "1DOqO1pb70jF77ZOvuQ6EHROdlztHmGFQNtQsG7VrqL8";
-  const sheetName = "showfees"; // Update if needed
+  const sheetName = "showfees";
   const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+  let amountColumnIndex = -1;
 
   fetch(url)
     .then(res => res.text())
@@ -94,40 +100,100 @@
 
       // Header Row
       const headerRow = document.createElement("tr");
-      data.table.cols.forEach(col => {
+      data.table.cols.forEach((col, i) => {
         if (col.label) {
           const th = document.createElement("th");
           th.textContent = col.label;
           headerRow.appendChild(th);
+
+          if (col.label.toLowerCase().includes("amount") || col.label.toLowerCase().includes("fees")) {
+            amountColumnIndex = i;
+          }
         }
       });
       table.appendChild(headerRow);
 
+      const dataRows = [];
+
       // Data Rows
       data.table.rows.forEach(row => {
         const tr = document.createElement("tr");
-        row.c.forEach(cell => {
+        row.c.forEach((cell, i) => {
           const td = document.createElement("td");
           td.textContent = cell ? cell.v : "";
           tr.appendChild(td);
         });
+        dataRows.push(tr);
         table.appendChild(tr);
       });
+
+      appendTotalRow();
+
+      // Search Filter
+      document.getElementById("searchInput").addEventListener("keyup", function () {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#sheet-data tr:not(:first-child):not(.total-row)");
+
+        rows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(filter) ? "" : "none";
+        });
+
+        updateTotalRow();
+      });
+
+      function appendTotalRow() {
+        const totalRow = document.createElement("tr");
+        totalRow.className = "total-row";
+        totalRow.id = "totalRow";
+
+        for (let i = 0; i < amountColumnIndex; i++) {
+          totalRow.appendChild(document.createElement("td"));
+        }
+
+        const totalLabel = document.createElement("td");
+        totalLabel.textContent = "Total:";
+        totalRow.appendChild(totalLabel);
+
+        const totalValue = document.createElement("td");
+        totalValue.textContent = "₹0.00";
+        totalValue.id = "totalValueCell";
+        totalRow.appendChild(totalValue);
+
+        const remainingCols = data.table.cols.length - amountColumnIndex - 2;
+        for (let i = 0; i < remainingCols; i++) {
+          totalRow.appendChild(document.createElement("td"));
+        }
+
+        table.appendChild(totalRow);
+        updateTotalRow();
+      }
+
+      function updateTotalRow() {
+        const rows = document.querySelectorAll("#sheet-data tr:not(:first-child):not(.total-row)");
+        let total = 0;
+
+        rows.forEach(row => {
+          if (row.style.display !== "none") {
+            const cells = row.querySelectorAll("td");
+            const val = cells[amountColumnIndex]?.textContent || "0";
+            const num = parseFloat(val.replace(/[^0-9.-]+/g, ""));
+            if (!isNaN(num)) total += num;
+          }
+        });
+
+        const totalValueCell = document.getElementById("totalValueCell");
+        if (totalValueCell) {
+          totalValueCell.textContent = total.toLocaleString('en-IN', {
+            style: 'currency',
+            currency: 'INR'
+          });
+        }
+      }
     })
     .catch(error => {
       console.error("Error loading sheet data:", error);
     });
-
-  // Search Filter
-  document.getElementById("searchInput").addEventListener("keyup", function () {
-    const filter = this.value.toLowerCase();
-    const rows = document.querySelectorAll("#sheet-data tr:not(:first-child)");
-
-    rows.forEach(row => {
-      const text = row.textContent.toLowerCase();
-      row.style.display = text.includes(filter) ? "" : "none";
-    });
-  });
 </script>
 
 </body>
