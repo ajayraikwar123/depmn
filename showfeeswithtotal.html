@@ -14,9 +14,16 @@
     h1 {
       text-align: center;
       color: #222;
-      margin-bottom: 30px;
+      margin-bottom: 10px;
       font-size: 2.5em;
       text-shadow: 1px 1px 2px #fff;
+    }
+
+    #timestamp {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #555;
     }
 
     #searchInput {
@@ -94,6 +101,7 @@
 <body>
 
 <h1>Dep MN Fees Records</h1>
+<div id="timestamp"></div>
 
 <input type="text" id="searchInput" placeholder="🔍 Search table...">
 <button id="downloadBtn">📄 Download PDF</button>
@@ -102,7 +110,6 @@
   <table id="sheet-data"></table>
 </div>
 
-<!-- Load html2pdf.js library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
@@ -110,6 +117,13 @@
   const sheetName = "showfees";
   const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
   let amountColumnIndex = -1;
+
+  const now = new Date();
+  const formattedDate = now.toLocaleString('en-IN', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  });
+  document.getElementById("timestamp").textContent = `Report generated on: ${formattedDate}`;
 
   fetch(url)
     .then(res => res.text())
@@ -208,17 +222,18 @@
       console.error("Error loading sheet data:", error);
     });
 
-  // PDF Export
+  // PDF Export with timestamp in filename
   document.getElementById("downloadBtn").addEventListener("click", () => {
     const element = document.getElementById("tableContainer");
+    const pdfTimestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const opt = {
       margin:       0.5,
-      filename:     'Dep_MN_Fees_Records.pdf',
+      filename:     `Dep_MN_Fees_Records_${pdfTimestamp}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2 },
       jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
     };
-    html2pdf().from(element).set(opt).save();
+    html2pdf().from(document.body).set(opt).save();
   });
 </script>
 
