@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Monkey Technical | Website Update</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(130deg, #1f1c2c, #928dab);
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 50px 40px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      text-align: center;
+      max-width: 460px;
+      width: 90%;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .logo {
+      width: 150px; /* Increased size */
+      margin-bottom: 25px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #ffcc00;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: #e0e0e0;
+    }
+
+    .footer {
+      margin-top: 30px;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <!-- Replace with your actual monkey.png path -->
+    <img src="monkey.png" alt="Monkey Technical Logo" class="logo" />
+
+    <h1>We're Getting an Upgrade</h1>
+    <p>
+      Monkey Technical is performing a system update to bring you a faster and smarter experience.<br>
+      We'll be back online shortly. Thanks for sticking with us!
+    </p>
+
+    <div class="footer">
+      &copy; 2025 Monkey Technical — All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
