@@ -1,250 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>All fees data</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to right, #74ebd5, #ACB6E5);
-      padding: 40px;
-      color: #333;
-    }
-
-    h1 {
-      text-align: center;
-      color: #222;
-      margin-bottom: 10px;
-      font-size: 2.5em;
-      text-shadow: 1px 1px 2px #fff;
-    }
-
-    #timestamp {
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 14px;
-      color: #555;
-    }
-
-    #searchInput {
-      display: block;
-      width: 100%;
-      max-width: 500px;
-      margin: 0 auto 20px;
-      padding: 12px 16px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    #downloadBtn {
-      display: block;
-      margin: 0 auto 30px;
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-
-    table {
-      width: 100%;
-      max-width: 1100px;
-      margin: 0 auto;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 0 20px rgba(0,0,0,0.15);
-    }
-
-    th, td {
-      padding: 14px 20px;
-      border-bottom: 1px solid #eee;
-      text-align: left;
-    }
-
-    th {
-      background-color: #3498db;
-      color: white;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    tr:hover {
-      background-color: #f1f1f1;
-      transition: background-color 0.3s;
-    }
-
-    tr.total-row {
-      background-color: #fdf6e3;
-      font-weight: bold;
-    }
-
-    @media (max-width: 768px) {
-      th, td {
-        padding: 10px;
-        font-size: 14px;
-      }
-
-      #searchInput {
-        width: 90%;
-      }
-    }
-  </style>
-</head>
-<body>
-
-<h1>Dep MN Fees Records</h1>
-<div id="timestamp"></div>
-
-<input type="text" id="searchInput" placeholder="🔍 Search table...">
-<button id="downloadBtn">📄 Download PDF</button>
-
-<div id="tableContainer">
-  <table id="sheet-data"></table>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-<script>
-  const sheetID = "1DOqO1pb70jF77ZOvuQ6EHROdlztHmGFQNtQsG7VrqL8";
-  const sheetName = "showfees";
-  const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
-  let amountColumnIndex = -1;
-
-  const now = new Date();
-  const formattedDate = now.toLocaleString('en-IN', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  });
-  document.getElementById("timestamp").textContent = `Report generated on: ${formattedDate}`;
-
-  fetch(url)
-    .then(res => res.text())
-    .then(rep => {
-      const data = JSON.parse(rep.substring(47).slice(0, -2));
-      const table = document.getElementById("sheet-data");
-
-      const headerRow = document.createElement("tr");
-      data.table.cols.forEach((col, i) => {
-        if (col.label) {
-          const th = document.createElement("th");
-          th.textContent = col.label;
-          headerRow.appendChild(th);
-
-          if (col.label.toLowerCase().includes("amount") || col.label.toLowerCase().includes("fees")) {
-            amountColumnIndex = i;
-          }
-        }
-      });
-      table.appendChild(headerRow);
-
-      data.table.rows.forEach(row => {
-        const tr = document.createElement("tr");
-        row.c.forEach((cell, i) => {
-          const td = document.createElement("td");
-          td.textContent = cell ? cell.v : "";
-          tr.appendChild(td);
-        });
-        table.appendChild(tr);
-      });
-
-      appendTotalRow();
-
-      document.getElementById("searchInput").addEventListener("keyup", function () {
-        const filter = this.value.toLowerCase();
-        const rows = document.querySelectorAll("#sheet-data tr:not(:first-child):not(.total-row)");
-
-        rows.forEach(row => {
-          const text = row.textContent.toLowerCase();
-          row.style.display = text.includes(filter) ? "" : "none";
-        });
-
-        updateTotalRow();
-      });
-
-      function appendTotalRow() {
-        const totalRow = document.createElement("tr");
-        totalRow.className = "total-row";
-        totalRow.id = "totalRow";
-
-        for (let i = 0; i < amountColumnIndex; i++) {
-          totalRow.appendChild(document.createElement("td"));
-        }
-
-        const totalLabel = document.createElement("td");
-        totalLabel.textContent = "Total:";
-        totalRow.appendChild(totalLabel);
-
-        const totalValue = document.createElement("td");
-        totalValue.textContent = "₹0.00";
-        totalValue.id = "totalValueCell";
-        totalRow.appendChild(totalValue);
-
-        const remainingCols = data.table.cols.length - amountColumnIndex - 2;
-        for (let i = 0; i < remainingCols; i++) {
-          totalRow.appendChild(document.createElement("td"));
-        }
-
-        table.appendChild(totalRow);
-        updateTotalRow();
-      }
-
-      function updateTotalRow() {
-        const rows = document.querySelectorAll("#sheet-data tr:not(:first-child):not(.total-row)");
-        let total = 0;
-
-        rows.forEach(row => {
-          if (row.style.display !== "none") {
-            const cells = row.querySelectorAll("td");
-            const val = cells[amountColumnIndex]?.textContent || "0";
-            const num = parseFloat(val.replace(/[^0-9.-]+/g, ""));
-            if (!isNaN(num)) total += num;
-          }
-        });
-
-        const totalValueCell = document.getElementById("totalValueCell");
-        if (totalValueCell) {
-          totalValueCell.textContent = total.toLocaleString('en-IN', {
-            style: 'currency',
-            currency: 'INR'
-          });
-        }
-      }
-    })
-    .catch(error => {
-      console.error("Error loading sheet data:", error);
-    });
-
-  // PDF Export with timestamp in filename
-  document.getElementById("downloadBtn").addEventListener("click", () => {
-    const element = document.getElementById("tableContainer");
-    const pdfTimestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const opt = {
-      margin:       0.5,
-      filename:     `Dep_MN_Fees_Records_${pdfTimestamp}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-    };
-    html2pdf().from(document.body).set(opt).save();
-  });
-</script>
-
-</body>
-</html>
- 
- -->
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -474,21 +227,28 @@
       const heading = document.getElementById("pageTitle");
       const button = document.getElementById("downloadBtn");
 
-      heading.style.display = "none"; // Hide title
-      button.style.display = "none";  // Hide button
+      heading.style.display = "none";
+      button.style.display = "none";
 
-      const pdfTimestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      // Generate filename as DEP_MN_Fees_Record_DD-MM-YYYY.pdf
+      const today = new Date();
+      const dd = String(today.getDate()).padStart(2, '0');
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const yyyy = today.getFullYear();
+      const formattedDate = `${dd}-${mm}-${yyyy}`;
+      const filename = `DEP_MN_Fees_Record_${formattedDate}.pdf`;
+
       const opt = {
-        margin:       0.5,
-        filename:     `Dep_MN_Fees_Records_${pdfTimestamp}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+        margin: 0.5,
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
       };
 
       html2pdf().from(document.body).set(opt).save().then(() => {
-        heading.style.display = "block";  // Restore title
-        button.style.display = "block";   // Restore button
+        heading.style.display = "block";
+        button.style.display = "block";
       });
     });
   </script>
