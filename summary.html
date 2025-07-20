@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Total Fees Summary</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #74ebd5, #ACB6E5);
+      padding: 40px;
+      color: #333;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2.5em;
+      color: #222;
+      text-shadow: 1px 1px 2px #fff;
+    }
+    h2 {
+      margin-top: 50px;
+      margin-bottom: 20px;
+      color: #222;
+      text-shadow: 1px 1px 2px #fff;
+    }
+    #loading {
+      font-size: 18px;
+      color: #555;
+      margin-top: 40px;
+    }
+    table {
+      margin: 0 auto 40px auto;
+      border-collapse: collapse;
+      width: 80%;
+      max-width: 700px;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0,0,0,0.15);
+    }
+    th, td {
+      padding: 14px 20px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+      font-size: 18px;
+    }
+    th {
+      background-color: #3498db;
+      color: white;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+      transition: background-color 0.3s;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Total Fees Summary</h1>
+
+  <div id="loading">Loading data, please wait...</div>
+
+  <h2>Total Fees Collected by Course</h2>
+  <table id="totalsByCourseTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>Course</th>
+        <th>Total Fees (₹)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Total Fees Collected by Collector</h2>
+  <table id="totalsByCollectorTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>Collected By</th>
+        <th>Total Fees (₹)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const sheetID = "1DOqO1pb70jF77ZOvuQ6EHROdlztHmGFQNtQsG7VrqL8";
+    const sheetName = "showfees";
+    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+
+    fetch(url)
+      .then(res => res.text())
+      .then(rep => {
+        const data = JSON.parse(rep.substring(47).slice(0, -2));
+        const cols = data.table.cols;
+        const rows = data.table.rows;
+
+        // Find exact column indexes
+        const courseColIndex = cols.findIndex(col => col.label && col.label.toLowerCase() === "course");
+        const collectorColIndex = cols.findIndex(col => col.label && col.label.toLowerCase() === "collected_by");
+        const amountColIndex = cols.findIndex(col =>
+          col.label && (col.label.toLowerCase().includes("amount") || col.label.toLowerCase().includes("fees"))
+        );
+
+        if (courseColIndex === -1) {
+          throw new Error('No "Course" column found in the sheet.');
+        }
+        if (collectorColIndex === -1) {
+          throw new Error('No "collected_by" column found in the sheet.');
+        }
+        if (amountColIndex === -1) {
+          throw new Error('No "Amount" or "Fees" column found in the sheet.');
+        }
+
+        const totalsByCourse = {};
+        const totalsByCollector = {};
+
+        rows.forEach(row => {
+          const course = row.c[courseColIndex]?.v || "Unknown";
+          const collector = row.c[collectorColIndex]?.v || "Unknown";
+          const feeStr = row.c[amountColIndex]?.v || "0";
+          const fee = parseFloat(String(feeStr).replace(/[^0-9.-]+/g, "")) || 0;
+
+          totalsByCourse[course] = (totalsByCourse[course] || 0) + fee;
+          totalsByCollector[collector] = (totalsByCollector[collector] || 0) + fee;
+        });
+
+        // Populate Course table
+        const tbodyCourse = document.querySelector("#totalsByCourseTable tbody");
+        Object.entries(totalsByCourse).forEach(([course, total]) => {
+          const tr = document.createElement("tr");
+          const tdCourse = document.createElement("td");
+          tdCourse.textContent = course;
+          const tdTotal = document.createElement("td");
+          tdTotal.textContent = total.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
+          tr.appendChild(tdCourse);
+          tr.appendChild(tdTotal);
+          tbodyCourse.appendChild(tr);
+        });
+
+        // Populate Collector table
+        const tbodyCollector = document.querySelector("#totalsByCollectorTable tbody");
+        Object.entries(totalsByCollector).forEach(([collector, total]) => {
+          const tr = document.createElement("tr");
+          const tdCollector = document.createElement("td");
+          tdCollector.textContent = collector;
+          const tdTotal = document.createElement("td");
+          tdTotal.textContent = total.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
+          tr.appendChild(tdCollector);
+          tr.appendChild(tdTotal);
+          tbodyCollector.appendChild(tr);
+        });
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("totalsByCourseTable").style.display = "table";
+        document.getElementById("totalsByCollectorTable").style.display = "table";
+
+      })
+      .catch(err => {
+        document.getElementById("loading").textContent = "Error loading data: " + err.message;
+        console.error(err);
+      });
+  </script>
+
+</body>
+</html>
