@@ -100,9 +100,9 @@
         const cols = data.table.cols;
         const rows = data.table.rows;
 
-        // Find required column indexes (case-insensitive)
+        // Find exact column indexes
         const courseColIndex = cols.findIndex(col => col.label && col.label.toLowerCase() === "course");
-        const collectorColIndex = cols.findIndex(col => col.label && col.label.toLowerCase().includes("collected by"));
+        const collectorColIndex = cols.findIndex(col => col.label && col.label.toLowerCase() === "collected_by");
         const amountColIndex = cols.findIndex(col =>
           col.label && (col.label.toLowerCase().includes("amount") || col.label.toLowerCase().includes("fees"))
         );
@@ -111,7 +111,7 @@
           throw new Error('No "Course" column found in the sheet.');
         }
         if (collectorColIndex === -1) {
-          throw new Error('No "Collected By" column found in the sheet.');
+          throw new Error('No "collected_by" column found in the sheet.');
         }
         if (amountColIndex === -1) {
           throw new Error('No "Amount" or "Fees" column found in the sheet.');
@@ -156,7 +156,6 @@
           tbodyCollector.appendChild(tr);
         });
 
-        // Show tables and hide loading text
         document.getElementById("loading").style.display = "none";
         document.getElementById("totalsByCourseTable").style.display = "table";
         document.getElementById("totalsByCollectorTable").style.display = "table";
