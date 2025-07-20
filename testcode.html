@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>All Fees Data</title>
+  <title>Fees Table with Edit</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -13,48 +13,32 @@
 
     h1 {
       text-align: center;
-      color: #222;
-      margin-bottom: 10px;
       font-size: 2.5em;
+      color: #222;
       text-shadow: 1px 1px 2px #fff;
     }
 
     #timestamp {
       text-align: center;
-      margin-bottom: 20px;
       font-size: 14px;
-      color: #555;
+      margin-bottom: 20px;
     }
 
     #searchInput {
       display: block;
-      width: 100%;
-      max-width: 500px;
       margin: 0 auto 20px;
-      padding: 12px 16px;
+      max-width: 500px;
+      padding: 10px;
       font-size: 16px;
       border-radius: 8px;
       border: 1px solid #ccc;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    #downloadBtn {
-      display: block;
-      margin: 0 auto 30px;
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      width: 100%;
     }
 
     table {
       width: 100%;
       max-width: 1100px;
-      margin: 0 auto;
+      margin: auto;
       border-collapse: collapse;
       background: white;
       border-radius: 10px;
@@ -63,7 +47,7 @@
     }
 
     th, td {
-      padding: 14px 20px;
+      padding: 12px;
       border-bottom: 1px solid #eee;
       text-align: left;
     }
@@ -71,122 +55,57 @@
     th {
       background-color: #3498db;
       color: white;
-      font-weight: bold;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
 
     tr:hover {
       background-color: #f1f1f1;
-      transition: background-color 0.3s;
     }
 
-    tr.total-row {
-      background-color: #fdf6e3;
-      font-weight: bold;
+    .edit-btn {
+      padding: 6px 12px;
+      background-color: #f39c12;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
 
-    #pdfHeader {
-      display: none;
-      margin-bottom: 10px;
-    }
-
-    #pdfHeaderContent {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-    }
-
-    #pdfHeader img {
-      height: 60px;
-    }
-
-    #pdfHeader h2 {
-      margin: 0;
-      font-size: 24px;
-      color: #333;
-    }
-
-    #pdfFooter {
-      display: none;
-      text-align: center;
-      margin-top: 30px;
-      font-size: 14px;
-      color: #555;
-    }
-
-    button {
-      transition: background 0.3s ease;
-    }
-
-    @media (max-width: 768px) {
-      th, td {
-        padding: 10px;
-        font-size: 14px;
-      }
-
-      #searchInput {
-        width: 90%;
-      }
+    .save-btn {
+      background-color: #27ae60;
     }
   </style>
 </head>
 <body>
-
-  <h1 id="pageTitle">Dep MN Fees Records</h1>
+  <h1>Fees Record Table</h1>
   <div id="timestamp"></div>
-
   <input type="text" id="searchInput" placeholder="🔍 Search table...">
-  <button id="downloadBtn">📄 Download PDF</button>
 
-  <!-- PDF Header -->
-  <div id="pdfHeader">
-    <div id="pdfHeaderContent">
-      <img src="logo.jpg" alt="Logo">
-      <h2>VIDYA DEP-MN 2025-26 (Q2)</h2>
-    </div>
-  </div>
+  <table id="sheet-data"></table>
 
-  <div id="tableContainer">
-    <table id="sheet-data"></table>
-    <!-- PDF Footer -->
-    <div id="pdfFooter">
-      <span id="pdfFooterText"></span>
-    </div>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script>
     const sheetID = "1DOqO1pb70jF77ZOvuQ6EHROdlztHmGFQNtQsG7VrqL8";
     const sheetName = "showfees";
+    const webAppURL = "YOUR_WEB_APP_URL_HERE"; // 🔁 Replace this
+
     const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
-    let amountColumnIndex = -1;
+    const timestamp = document.getElementById("timestamp");
+    const table = document.getElementById("sheet-data");
 
-    const now = new Date();
-    const formattedDate = now.toLocaleString('en-IN', {
-      dateStyle: 'medium',
-      timeStyle: 'short'
-    });
-
-    document.getElementById("timestamp").textContent = `Report generated on: ${formattedDate}`;
+    timestamp.textContent = `Report generated on: ${new Date().toLocaleString("en-IN")}`;
 
     fetch(url)
       .then(res => res.text())
       .then(rep => {
         const data = JSON.parse(rep.substring(47).slice(0, -2));
-        const table = document.getElementById("sheet-data");
+        const cols = data.table.cols;
+        const rows = data.table.rows;
 
         const headerRow = document.createElement("tr");
-        data.table.cols.forEach((col, i) => {
-          if (col.label) {
-            const th = document.createElement("th");
-            th.textContent = col.label;
-            headerRow.appendChild(th);
-            if (col.label.toLowerCase().includes("amount") || col.label.toLowerCase().includes("fees")) {
-              amountColumnIndex = i;
-            }
-          }
+        cols.forEach(col => {
+          const th = document.createElement("th");
+          th.textContent = col.label;
+          headerRow.appendChild(th);
         });
 
         const actionTh = document.createElement("th");
@@ -194,169 +113,82 @@
         headerRow.appendChild(actionTh);
         table.appendChild(headerRow);
 
-        data.table.rows.forEach(row => {
+        rows.forEach((row, index) => {
           const tr = document.createElement("tr");
-          row.c.forEach((cell, i) => {
+          row.c.forEach(cell => {
             const td = document.createElement("td");
             td.textContent = cell ? cell.v : "";
             tr.appendChild(td);
           });
 
           const actionTd = document.createElement("td");
-          const editBtn = document.createElement("button");
-          editBtn.textContent = "Edit";
-          editBtn.style.padding = "5px 10px";
-          editBtn.style.background = "#f39c12";
-          editBtn.style.color = "white";
-          editBtn.style.border = "none";
-          editBtn.style.borderRadius = "4px";
-          editBtn.style.cursor = "pointer";
-
-          editBtn.addEventListener("click", function () {
-            if (editBtn.textContent === "Edit") {
-              makeRowEditable(tr, editBtn);
-            } else {
-              saveRow(tr, editBtn);
-            }
-          });
-
-          actionTd.appendChild(editBtn);
+          const btn = document.createElement("button");
+          btn.textContent = "Edit";
+          btn.className = "edit-btn";
+          btn.onclick = () => toggleEdit(tr, btn, index + 2); // row index (header + 1-based)
+          actionTd.appendChild(btn);
           tr.appendChild(actionTd);
           table.appendChild(tr);
         });
+      });
 
-        appendTotalRow();
-
-        document.getElementById("searchInput").addEventListener("keyup", function () {
-          const filter = this.value.toLowerCase();
-          const rows = document.querySelectorAll("#sheet-data tr:not(:first-child):not(.total-row)");
-
-          rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(filter) ? "" : "none";
-          });
-
-          updateTotalRow();
+    function toggleEdit(row, btn, rowIndex) {
+      const cells = row.querySelectorAll("td:not(:last-child)");
+      if (btn.textContent === "Edit") {
+        cells.forEach(cell => {
+          const input = document.createElement("input");
+          input.value = cell.textContent;
+          input.style.width = "100%";
+          cell.textContent = "";
+          cell.appendChild(input);
+        });
+        btn.textContent = "Save";
+        btn.classList.add("save-btn");
+      } else {
+        const updatedRow = [];
+        cells.forEach(cell => {
+          const input = cell.querySelector("input");
+          if (input) {
+            cell.textContent = input.value;
+            updatedRow.push(input.value);
+          }
         });
 
-        function appendTotalRow() {
-          const totalRow = document.createElement("tr");
-          totalRow.className = "total-row";
-          totalRow.id = "totalRow";
+        btn.textContent = "Edit";
+        btn.classList.remove("save-btn");
 
-          for (let i = 0; i < amountColumnIndex; i++) {
-            totalRow.appendChild(document.createElement("td"));
+        // POST updated data to Apps Script
+        fetch(webAppURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            rowIndex: rowIndex,
+            updatedRow: updatedRow
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            alert("Row updated successfully in Google Sheet.");
+          } else {
+            alert("Update failed. Please check.");
           }
-
-          const totalLabel = document.createElement("td");
-          totalLabel.textContent = "Total:";
-          totalRow.appendChild(totalLabel);
-
-          const totalValue = document.createElement("td");
-          totalValue.textContent = "₹0.00";
-          totalValue.id = "totalValueCell";
-          totalRow.appendChild(totalValue);
-
-          const remainingCols = data.table.cols.length - amountColumnIndex - 1;
-          for (let i = 0; i < remainingCols; i++) {
-            totalRow.appendChild(document.createElement("td"));
-          }
-
-          table.appendChild(totalRow);
-          updateTotalRow();
-        }
-
-        function updateTotalRow() {
-          const rows = document.querySelectorAll("#sheet-data tr:not(:first-child):not(.total-row)");
-          let total = 0;
-
-          rows.forEach(row => {
-            if (row.style.display !== "none") {
-              const cells = row.querySelectorAll("td");
-              const val = cells[amountColumnIndex]?.textContent || "0";
-              const num = parseFloat(val.replace(/[^0-9.-]+/g, ""));
-              if (!isNaN(num)) total += num;
-            }
-          });
-
-          const totalValueCell = document.getElementById("totalValueCell");
-          if (totalValueCell) {
-            totalValueCell.textContent = total.toLocaleString('en-IN', {
-              style: 'currency',
-              currency: 'INR'
-            });
-          }
-        }
-      })
-      .catch(error => {
-        console.error("Error loading sheet data:", error);
-      });
-
-    function makeRowEditable(row, btn) {
-      const cells = row.querySelectorAll("td:not(:last-child)");
-      cells.forEach(cell => {
-        const input = document.createElement("input");
-        input.value = cell.textContent;
-        input.style.width = "100%";
-        input.style.padding = "4px";
-        cell.textContent = "";
-        cell.appendChild(input);
-      });
-      btn.textContent = "Save";
-      btn.style.background = "#27ae60";
+        })
+        .catch(err => {
+          console.error("Update error:", err);
+          alert("Error updating data.");
+        });
+      }
     }
 
-    function saveRow(row, btn) {
-      const cells = row.querySelectorAll("td:not(:last-child)");
-      cells.forEach(cell => {
-        const input = cell.querySelector("input");
-        if (input) {
-          cell.textContent = input.value;
-        }
-      });
-      btn.textContent = "Edit";
-      btn.style.background = "#f39c12";
-      updateTotalRow();
-    }
-
-    document.getElementById("downloadBtn").addEventListener("click", () => {
-      const heading = document.getElementById("pageTitle");
-      const button = document.getElementById("downloadBtn");
-      const timestamp = document.getElementById("timestamp");
-      const pdfHeader = document.getElementById("pdfHeader");
-      const pdfFooter = document.getElementById("pdfFooter");
-      const pdfFooterText = document.getElementById("pdfFooterText");
-
-      heading.style.display = "none";
-      button.style.display = "none";
-      timestamp.style.display = "none";
-      pdfHeader.style.display = "block";
-      pdfFooter.style.display = "block";
-      pdfFooterText.textContent = `Report generated on: ${formattedDate}`;
-
-      const today = new Date();
-      const dd = String(today.getDate()).padStart(2, '0');
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const yyyy = today.getFullYear();
-      const filename = `DEP_MN_Fees_Record_${dd}-${mm}-${yyyy}.pdf`;
-
-      const opt = {
-        margin: 0.5,
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-      };
-
-      html2pdf().from(document.body).set(opt).save().then(() => {
-        heading.style.display = "block";
-        button.style.display = "block";
-        timestamp.style.display = "block";
-        pdfHeader.style.display = "none";
-        pdfFooter.style.display = "none";
+    document.getElementById("searchInput").addEventListener("input", function () {
+      const search = this.value.toLowerCase();
+      const rows = table.querySelectorAll("tr:not(:first-child)");
+      rows.forEach(row => {
+        const rowText = row.textContent.toLowerCase();
+        row.style.display = rowText.includes(search) ? "" : "none";
       });
     });
   </script>
-
 </body>
 </html>
