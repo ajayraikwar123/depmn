@@ -116,6 +116,10 @@
       color: #555;
     }
 
+    button {
+      transition: background 0.3s ease;
+    }
+
     @media (max-width: 768px) {
       th, td {
         padding: 10px;
@@ -140,7 +144,7 @@
   <div id="pdfHeader">
     <div id="pdfHeaderContent">
       <img src="logo.jpg" alt="Logo">
-      <h2>VIDYA DEP-MN 2025-26 (Q2) </h2>
+      <h2>VIDYA DEP-MN 2025-26 (Q2)</h2>
     </div>
   </div>
 
@@ -184,6 +188,10 @@
             }
           }
         });
+
+        const actionTh = document.createElement("th");
+        actionTh.textContent = "Actions";
+        headerRow.appendChild(actionTh);
         table.appendChild(headerRow);
 
         data.table.rows.forEach(row => {
@@ -193,6 +201,27 @@
             td.textContent = cell ? cell.v : "";
             tr.appendChild(td);
           });
+
+          const actionTd = document.createElement("td");
+          const editBtn = document.createElement("button");
+          editBtn.textContent = "Edit";
+          editBtn.style.padding = "5px 10px";
+          editBtn.style.background = "#f39c12";
+          editBtn.style.color = "white";
+          editBtn.style.border = "none";
+          editBtn.style.borderRadius = "4px";
+          editBtn.style.cursor = "pointer";
+
+          editBtn.addEventListener("click", function () {
+            if (editBtn.textContent === "Edit") {
+              makeRowEditable(tr, editBtn);
+            } else {
+              saveRow(tr, editBtn);
+            }
+          });
+
+          actionTd.appendChild(editBtn);
+          tr.appendChild(actionTd);
           table.appendChild(tr);
         });
 
@@ -228,7 +257,7 @@
           totalValue.id = "totalValueCell";
           totalRow.appendChild(totalValue);
 
-          const remainingCols = data.table.cols.length - amountColumnIndex - 2;
+          const remainingCols = data.table.cols.length - amountColumnIndex - 1;
           for (let i = 0; i < remainingCols; i++) {
             totalRow.appendChild(document.createElement("td"));
           }
@@ -262,6 +291,33 @@
       .catch(error => {
         console.error("Error loading sheet data:", error);
       });
+
+    function makeRowEditable(row, btn) {
+      const cells = row.querySelectorAll("td:not(:last-child)");
+      cells.forEach(cell => {
+        const input = document.createElement("input");
+        input.value = cell.textContent;
+        input.style.width = "100%";
+        input.style.padding = "4px";
+        cell.textContent = "";
+        cell.appendChild(input);
+      });
+      btn.textContent = "Save";
+      btn.style.background = "#27ae60";
+    }
+
+    function saveRow(row, btn) {
+      const cells = row.querySelectorAll("td:not(:last-child)");
+      cells.forEach(cell => {
+        const input = cell.querySelector("input");
+        if (input) {
+          cell.textContent = input.value;
+        }
+      });
+      btn.textContent = "Edit";
+      btn.style.background = "#f39c12";
+      updateTotalRow();
+    }
 
     document.getElementById("downloadBtn").addEventListener("click", () => {
       const heading = document.getElementById("pageTitle");
