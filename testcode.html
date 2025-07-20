@@ -2,59 +2,134 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Simple Login</title>
+  <title>Total Fees by Course</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #ffecd2, #fcb69f);
+      padding: 40px;
+      color: #333;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2.5em;
+      color: #444;
+      text-shadow: 1px 1px 2px #fff;
+    }
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+      width: 80%;
+      max-width: 600px;
+      background: white;
+      box-shadow: 0 0 15px rgba(0,0,0,0.15);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px 20px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+      font-size: 18px;
+    }
+    th {
+      background-color: #ff6f61;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    #loading {
+      font-size: 18px;
+      color: #666;
+      margin-top: 40px;
+    }
+  </style>
 </head>
 <body>
-  <h2>Login</h2>
-  <form id="loginForm">
-    <label>
-      Username:<br />
-      <input type="text" id="username" required />
-    </label>
-    <br /><br />
-    <label>
-      Password:<br />
-      <input type="password" id="password" required />
-    </label>
-    <br /><br />
-    <button type="submit">Login</button>
-  </form>
+
+  <h1>Total Fees Collected by Course</h1>
+
+  <div id="loading">Loading data, please wait...</div>
+  <table id="totalsTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>Course</th>
+        <th>Total Fees (₹)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script>
-    const webAppUrl = 'https://script.google.com/macros/s/AKfycbwfTYzHiLJmpojR8-lo2bN5GZTTp3bkft9aph9nTxd5sRCtVXqMoOaKqAVdYUHyGLuf4g/exec';
+    const sheetID = "1DOqO1pb70jF77ZOvuQ6EHROdlztHmGFQNtQsG7VrqL8";
+    const sheetName = "showfees";
+    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
 
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
+    fetch(url)
+      .then(res => res.text())
+      .then(rep => {
+        const data = JSON.parse(rep.substring(47).slice(0, -2));
 
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
+        const cols = data.table.cols;
+        const rows = data.table.rows;
 
-      if (!username || !password) {
-        alert('Please enter both username and password');
-        return;
-      }
+        // Find the index of "Course" column (case-insensitive)
+        const courseColIndex = cols.findIndex(col => col.label && col.label.toLowerCase() === "course");
+        if (courseColIndex === -1) {
+          throw new Error('No "Course" column found in the sheet.');
+        }
 
-      try {
-        const response = await fetch(webAppUrl, {
-          method: 'POST',
-          body: JSON.stringify({ username, password }),
-          headers: { 'Content-Type': 'application/json' }
+        // Find the index of "Amount" or "Fees" column (case-insensitive)
+        const amountColIndex = cols.findIndex(col =>
+          col.label && (col.label.toLowerCase().includes("amount") || col.label.toLowerCase().includes("fees"))
+        );
+        if (amountColIndex === -1) {
+          throw new Error('No "Amount" or "Fees" column found in the sheet.');
+        }
+
+        // Aggregate total fees by course
+        const totals = {};
+
+        rows.forEach(row => {
+          const course = row.c[courseColIndex]?.v || "Unknown";
+          let feeStr = row.c[amountColIndex]?.v || "0";
+          // Remove any non-numeric chars and parse float
+          const fee = parseFloat(String(feeStr).toString().replace(/[^0-9.-]+/g, "")) || 0;
+
+          if (!totals[course]) {
+            totals[course] = 0;
+          }
+          totals[course] += fee;
         });
 
-        const data = await response.json();
+        // Populate table
+        const tbody = document.querySelector("#totalsTable tbody");
+        Object.entries(totals).forEach(([course, total]) => {
+          const tr = document.createElement("tr");
+          const tdCourse = document.createElement("td");
+          tdCourse.textContent = course;
 
-        if (data.success) {
-          alert('Login successful!');
-          // Redirect or load protected page here, e.g.:
-          // window.location.href = 'home.html';
-        } else {
-          alert(data.message || 'Invalid username or password');
-        }
-      } catch (err) {
-        alert('Error connecting to server');
+          const tdTotal = document.createElement("td");
+          tdTotal.textContent = total.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
+
+          tr.appendChild(tdCourse);
+          tr.appendChild(tdTotal);
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("totalsTable").style.display = "table";
+
+      })
+      .catch(err => {
+        document.getElementById("loading").textContent = "Error loading data: " + err.message;
         console.error(err);
-      }
-    });
+      });
   </script>
+
 </body>
 </html>
