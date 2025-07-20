@@ -6,7 +6,7 @@
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to right, #ffecd2, #fcb69f);
+      background: linear-gradient(to right, #74ebd5, #ACB6E5);
       padding: 40px;
       color: #333;
       text-align: center;
@@ -14,8 +14,13 @@
     h1 {
       margin-bottom: 20px;
       font-size: 2.5em;
-      color: #444;
+      color: #222;
       text-shadow: 1px 1px 2px #fff;
+    }
+    #loading {
+      font-size: 18px;
+      color: #555;
+      margin-top: 40px;
     }
     table {
       margin: 0 auto;
@@ -23,29 +28,29 @@
       width: 80%;
       max-width: 600px;
       background: white;
-      box-shadow: 0 0 15px rgba(0,0,0,0.15);
-      border-radius: 8px;
+      border-radius: 10px;
       overflow: hidden;
+      box-shadow: 0 0 20px rgba(0,0,0,0.15);
     }
     th, td {
-      padding: 12px 20px;
-      border-bottom: 1px solid #ddd;
+      padding: 14px 20px;
+      border-bottom: 1px solid #eee;
       text-align: left;
       font-size: 18px;
     }
     th {
-      background-color: #ff6f61;
+      background-color: #3498db;
       color: white;
+      font-weight: bold;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.5px;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+      transition: background-color 0.3s;
     }
     tr:last-child td {
       border-bottom: none;
-    }
-    #loading {
-      font-size: 18px;
-      color: #666;
-      margin-top: 40px;
     }
   </style>
 </head>
@@ -77,13 +82,13 @@
         const cols = data.table.cols;
         const rows = data.table.rows;
 
-        // Find the index of "Course" column (case-insensitive)
+        // Find "Course" column index (case-insensitive)
         const courseColIndex = cols.findIndex(col => col.label && col.label.toLowerCase() === "course");
         if (courseColIndex === -1) {
           throw new Error('No "Course" column found in the sheet.');
         }
 
-        // Find the index of "Amount" or "Fees" column (case-insensitive)
+        // Find "Amount" or "Fees" column index
         const amountColIndex = cols.findIndex(col =>
           col.label && (col.label.toLowerCase().includes("amount") || col.label.toLowerCase().includes("fees"))
         );
@@ -91,31 +96,24 @@
           throw new Error('No "Amount" or "Fees" column found in the sheet.');
         }
 
-        // Aggregate total fees by course
         const totals = {};
 
         rows.forEach(row => {
           const course = row.c[courseColIndex]?.v || "Unknown";
-          let feeStr = row.c[amountColIndex]?.v || "0";
-          // Remove any non-numeric chars and parse float
-          const fee = parseFloat(String(feeStr).toString().replace(/[^0-9.-]+/g, "")) || 0;
+          const feeStr = row.c[amountColIndex]?.v || "0";
+          const fee = parseFloat(String(feeStr).replace(/[^0-9.-]+/g, "")) || 0;
 
-          if (!totals[course]) {
-            totals[course] = 0;
-          }
+          if (!totals[course]) totals[course] = 0;
           totals[course] += fee;
         });
 
-        // Populate table
         const tbody = document.querySelector("#totalsTable tbody");
         Object.entries(totals).forEach(([course, total]) => {
           const tr = document.createElement("tr");
           const tdCourse = document.createElement("td");
           tdCourse.textContent = course;
-
           const tdTotal = document.createElement("td");
           tdTotal.textContent = total.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
-
           tr.appendChild(tdCourse);
           tr.appendChild(tdTotal);
           tbody.appendChild(tr);
@@ -123,7 +121,6 @@
 
         document.getElementById("loading").style.display = "none";
         document.getElementById("totalsTable").style.display = "table";
-
       })
       .catch(err => {
         document.getElementById("loading").textContent = "Error loading data: " + err.message;
