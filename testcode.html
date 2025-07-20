@@ -148,12 +148,10 @@
         return;
       }
 
-      fetch('https://script.google.com/macros/s/AKfycby6NeM6ISTnP7bR6GPkw0_0cR0m7_IU3U2wXk5dj_QIipFD8RC6-054_XCmEGUt-jR5Kg/exec', {
+      fetch('https://script.google.com/macros/s/AKfycbwfTYzHiLJmpojR8-lo2bN5GZTTp3bkft9aph9nTxd5sRCtVXqMoOaKqAVdYUHyGLuf4g/exec', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
       })
       .then(response => response.json())
       .then(data => {
