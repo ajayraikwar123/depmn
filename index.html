@@ -1,4 +1,4 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -55,6 +55,7 @@
       font-size: 15px;
       transition: border-color 0.3s ease;
     }
+
     input[type="text"]:focus,
     input[type="password"]:focus {
       outline: none;
@@ -74,6 +75,9 @@
       cursor: pointer;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     button:hover {
@@ -81,8 +85,22 @@
       box-shadow: 0 6px 12px rgba(41, 128, 185, 0.7);
     }
 
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid white;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     .footer-text {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       font-size: 14px;
       color: #ffffffcc;
       text-align: center;
@@ -97,6 +115,7 @@
       cursor: default;
       max-width: 350px;
     }
+
     .footer-text:hover {
       background: #3498db;
       color: #fff;
@@ -128,7 +147,10 @@
         <label for="password">Password</label>
         <input type="password" id="password" required placeholder="Enter password" autocomplete="current-password" />
       </div>
-      <button type="submit">Login</button>
+      <button type="submit" id="loginBtn">
+        Login
+        <div class="spinner" id="spinner"></div>
+      </button>
     </form>
   </div>
 
@@ -137,23 +159,40 @@
   </div>
 
   <script>
+    const users = {
+      "depmnadmin": "abcd1234",
+      "ajay": "ajay123",
+      "praveen": "praveen123",
+      "muskan": "muskan123"
+    };
+
     document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault();
 
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value.trim();
+      const loginBtn = document.getElementById('loginBtn');
+      const spinner = document.getElementById('spinner');
 
-      if (email === 'depmnadmin' && password === 'abcd1234') {
-        window.location.href = 'home.html';
-      } else {
-        alert('Invalid username or password');
-      }
+      // Show spinner
+      spinner.style.display = 'inline-block';
+      loginBtn.disabled = true;
+
+      setTimeout(() => {
+        spinner.style.display = 'none';
+        loginBtn.disabled = false;
+
+        if (users[email] && users[email] === password) {
+          window.location.href = 'home.html';
+        } else {
+          alert('Invalid username or password');
+        }
+      }, 1500); // simulate login delay
     });
   </script>
 
 </body>
 </html>
- -->
 
 
 
@@ -161,7 +200,10 @@
 
 
 
- <!DOCTYPE html>
+
+
+<!-- //with google sheets Username Password and fetch data from sheets
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -194,7 +236,6 @@
       margin-bottom: 30px;
       color: #2c3e50;
       font-size: 24px;
-      text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.6);
     }
 
     .form-group {
@@ -209,40 +250,57 @@
     }
 
     input[type="text"],
-    input[type="password"] {
+    input[type="password"],
+    button {
       width: 100%;
       padding: 12px;
       border-radius: 6px;
-      border: 1px solid #ccc;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       font-size: 15px;
-      transition: border-color 0.3s ease;
+      box-sizing: border-box;
     }
 
-    input[type="text"]:focus,
-    input[type="password"]:focus {
+    input {
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    input:focus {
       outline: none;
       border-color: #3498db;
       box-shadow: 0 0 8px rgba(52, 152, 219, 0.6);
     }
 
     button {
-      width: 100%;
-      padding: 12px;
       background-color: #3498db;
       color: white;
-      font-size: 16px;
       font-weight: bold;
       border: none;
-      border-radius: 6px;
       cursor: pointer;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
 
-    button:hover {
-      background-color: #2980b9;
-      box-shadow: 0 6px 12px rgba(41, 128, 185, 0.7);
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 3px solid white;
+      border-top: 3px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+
+    .loading .spinner {
+      display: inline-block;
     }
 
     #message {
@@ -253,19 +311,13 @@
     }
 
     .footer-text {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       font-size: 14px;
       color: #ffffffcc;
       text-align: center;
-      user-select: none;
-      position: relative;
-      letter-spacing: 1.1px;
       padding: 10px 20px;
       border-radius: 30px;
       background: rgba(52, 152, 219, 0.3);
       box-shadow: 0 0 15px rgba(52, 152, 219, 0.6);
-      transition: background-color 0.3s ease, color 0.3s ease;
-      cursor: default;
       max-width: 350px;
     }
 
@@ -273,16 +325,16 @@
       background: #3498db;
       color: #fff;
       box-shadow: 0 0 20px #3498db;
-      text-shadow: 0 0 5px #fff;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     @media (max-width: 480px) {
       .login-container {
         padding: 25px;
-      }
-
-      h2 {
-        font-size: 22px;
       }
     }
   </style>
@@ -293,13 +345,16 @@
     <h2>Login to DEP-MN</h2>
     <div class="form-group">
       <label for="username">Username</label>
-      <input type="text" id="username" required placeholder="Enter username" autocomplete="username" />
+      <input type="text" id="username" placeholder="Enter username" required />
     </div>
     <div class="form-group">
       <label for="password">Password</label>
-      <input type="password" id="password" required placeholder="Enter password" autocomplete="current-password" />
+      <input type="password" id="password" placeholder="Enter password" required />
     </div>
-    <button onclick="login()">Login</button>
+    <button id="loginBtn" onclick="login()">
+      <span id="btnText">Login</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
     <div id="message"></div>
   </div>
 
@@ -314,12 +369,20 @@
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
       const message = document.getElementById("message");
+      const loginBtn = document.getElementById("loginBtn");
+      const btnText = document.getElementById("btnText");
+      const spinner = document.getElementById("spinner");
 
       if (!username || !password) {
         message.style.color = "red";
         message.innerText = "Please enter both fields.";
         return;
       }
+
+      // Show spinner
+      loginBtn.disabled = true;
+      loginBtn.classList.add("loading");
+      message.innerText = "";
 
       fetch(scriptURL, {
         method: 'POST',
@@ -328,6 +391,9 @@
       })
       .then(res => res.text())
       .then(response => {
+        loginBtn.disabled = false;
+        loginBtn.classList.remove("loading");
+
         if (response === "success") {
           message.style.color = "green";
           message.innerText = "Login successful!";
@@ -338,6 +404,8 @@
         }
       })
       .catch(error => {
+        loginBtn.disabled = false;
+        loginBtn.classList.remove("loading");
         message.style.color = "red";
         message.innerText = "Error connecting to server.";
         console.error("Error:", error);
@@ -347,3 +415,4 @@
 
 </body>
 </html>
+ -->
