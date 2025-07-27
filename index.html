@@ -203,6 +203,28 @@
 
 
 <!-- //with google sheets Username Password and fetch data from sheets
+
+
+Script___________________________
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+
+  var username = e.parameter.username;
+  var password = e.parameter.password;
+
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] == username && data[i][1] == password) {
+      return ContentService.createTextOutput("success");
+    }
+  }
+  return ContentService.createTextOutput("failure");
+}
+___________________________________________
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
