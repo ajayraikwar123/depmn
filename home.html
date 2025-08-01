@@ -1,240 +1,10 @@
-<!--  <!DOCTYPE html>
+<!--  
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Student Fee Collection Form</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background:
-        url('https://images.pexels.com/photos/749564/pexels-photo-749564.jpeg?_gl=1*qoi4tx*_ga*MTY4NzIyODUzNi4xNzUxNDUwMzU2*_ga_8JE65Q40S6*czE3NTE0NTAzNTYkbzEkZzEkdDE3NTE0NTA0ODEkajU5JGwwJGgw') no-repeat center center fixed,
-        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.15) 2px, transparent 10px),
-        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.15) 2px, transparent 10px),
-        linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
-      background-size: cover, 40px 40px, 40px 40px, cover;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      margin: 0;
-      min-height: 100vh;
-    }
-
-    form {
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      width: 320px;
-      margin-bottom: 30px;
-    }
-
-    form label {
-      display: block;
-      margin-top: 10px;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-
-    form input,
-    form select {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-      font-size: 16px;
-    }
-
-    form button {
-      width: 100%;
-      padding: 12px;
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      margin-top: 10px;
-    }
-
-    form button:hover {
-      background-color: #45a049;
-    }
-
-    #log {
-      width: 100%;
-      max-width: 500px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    #log h3 {
-      margin-top: 0;
-      font-size: 18px;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 5px;
-    }
-
-    .log-entry {
-      margin-bottom: 10px;
-      font-size: 14px;
-      background: #f9f9f9;
-      padding: 8px;
-      border-radius: 4px;
-      border-left: 3px solid #4caf50;
-    }
-
-    .log-buttons {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 15px;
-    }
-
-    .log-buttons button {
-      flex: 1;
-      padding: 10px 15px;
-      background-color: #2196f3;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background-color 0.3s;
-    }
-
-    .log-buttons button:hover {
-      background-color: #1976d2;
-    }
-  </style>
-</head>
-<body>
-  <form method="post" id="sheetdb-form" action="https://sheetdb.io/api/v1/73xdu8w08ryfp">
-    <label for="date">Date:</label>
-    <input name="data[date]" id="date" type="date" required />
-
-    <label for="name">Name:</label>
-    <input name="data[name]" type="text" required />
-
-    <label for="course">Course:</label>
-    <select name="data[course]" id="course" required>
-      <option value="" disabled selected>Select a course</option>
-      <option value="Skill India CCAB">Skill India CCAB</option>
-      <option value="Advance Excel">Advance Excel</option>
-      <option value="Tally Prime">Tally Prime</option>
-      <option value="Web Designing">Web Designing</option>
-      <option value="Web Development">Web Development</option>
-      <option value="Hardware & Networking">Hardware & Networking</option>
-    </select>
-
-    <label for="fees">Fees:</label>
-    <input name="data[fees]" type="number" id="fees" required />
-
-    <label for="collected_by">Collected By:</label>
-    <select name="data[collected_by]" required>
-      <option value="" disabled selected>Select staff</option>
-      <option value="Mr. Ajay">Mr. Ajay</option>
-      <option value="Miss. Muskan">Miss. Muskan</option>
-      <option value="Mr. Praveen">Mr. Praveen</option>
-    </select>
-
-    <button type="submit">Submit</button>
-  </form>
-
-  <div id="log">
-    <h3>Submission Log</h3>
-    <div id="log-entries"></div>
-    <div class="log-buttons">
-      <button onclick="window.location.href='showfees.html'">Show All Fees Sheet</button>
-      <button onclick="window.location.href='timetable.html'">Show Timetable</button>
-    </div>
-  </div>
-
-  <script>
-    // Auto-fill today's date
-    document.addEventListener("DOMContentLoaded", function () {
-      const today = new Date().toISOString().split("T")[0];
-      document.getElementById("date").value = today;
-      fetchLogFromSheetDB();
-    });
-
-    // Auto-fill fees based on course
-    const courseFees = {
-      "Skill India CCAB": 600,
-      "Advance Excel": 600,
-      "Tally Prime": 3000,
-      "Web Designing": 600,
-      "Web Development": 1500,
-      "Hardware & Networking": 600,
-    };
-
-    document.getElementById("course").addEventListener("change", function () {
-      const selectedCourse = this.value;
-      const feesInput = document.getElementById("fees");
-      feesInput.value = courseFees[selectedCourse] || "";
-    });
-
-    // Handle form submission
-    const form = document.getElementById("sheetdb-form");
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      fetch(form.action, {
-        method: "POST",
-        body: new FormData(form),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          alert("Success! Data submitted.");
-          fetchLogFromSheetDB();
-          form.reset();
-          document.getElementById("date").value = new Date().toISOString().split("T")[0];
-        })
-        .catch((error) => {
-          alert("Error! Please try again.");
-          console.error(error);
-        });
-    });
-
-    // Fetch recent logs
-    function fetchLogFromSheetDB() {
-      fetch("https://sheetdb.io/api/v1/73xdu8w08ryfp")
-        .then((response) => response.json())
-        .then((data) => {
-          const logContainer = document.getElementById("log-entries");
-          logContainer.innerHTML = "";
-
-          data.sort((a, b) => new Date(b.date) - new Date(a.date));
-          data.slice(0, 10).forEach((entry) => {
-            const div = document.createElement("div");
-            div.className = "log-entry";
-            div.innerText = `${entry.date} | ${entry.name} | ${entry.course} | ₹${entry.fees} | Collected by: ${entry.collected_by}`;
-            logContainer.appendChild(div);
-          });
-        })
-        .catch((err) => {
-          console.error("Failed to load SheetDB data:", err);
-        });
-    }
-  </script>
-</body>
-</html>
- -->
-
-
-
-
-
- <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Student Fee Collection Form</title>
-  <!-- Google Font: Poppins -->
+  
   <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
   <style>
     body {
@@ -451,6 +221,282 @@
         })
         .catch((err) => {
           console.error("Failed to load SheetDB data:", err);
+        });
+    }
+  </script>
+</body>
+</html> 
+
+-->
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Fee Collection Form</title>
+  <!-- Google Font: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background:
+        url('https://images.pexels.com/photos/749564/pexels-photo-749564.jpeg?_gl=1*qoi4tx*_ga*MTY4NzIyODUzNi4xNzUxNDUwMzU2*_ga_8JE65Q40S6*czE3NTE0NTAzNTYkbzEkZzEkdDE3NTE0NTA0ODEkajU5JGwwJGgw') no-repeat center center fixed,
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.15) 2px, transparent 10px),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.15) 2px, transparent 10px),
+        linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+      background-size: cover, 40px 40px, 40px 40px, cover;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    form {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 320px;
+      margin-bottom: 30px;
+    }
+
+    form label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    form input,
+    form select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    form button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 10px;
+    }
+
+    form button:hover {
+      background-color: #45a049;
+    }
+
+    #log {
+      width: 100%;
+      max-width: 500px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    #log h3 {
+      margin-top: 0;
+      font-size: 18px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+    }
+
+    .log-entry {
+      margin-bottom: 10px;
+      font-size: 14px;
+      background: #f9f9f9;
+      padding: 8px;
+      border-radius: 4px;
+      border-left: 3px solid #4caf50;
+    }
+
+    .log-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .log-buttons button {
+      flex: 1;
+      padding: 10px 15px;
+      background-color: #2196f3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+
+    .log-buttons button:hover {
+      background-color: #1976d2;
+    }
+
+    /* Loading Spinner Styles */
+    #loading-spinner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .spinner {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #4caf50;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <form method="post" id="sheetdb-form" action="https://sheetdb.io/api/v1/73xdu8w08ryfp">
+    <label for="date">Date:</label>
+    <input name="data[date]" id="date" type="date" required />
+
+    <label for="name">Name:</label>
+    <input name="data[name]" type="text" required />
+
+    <label for="course">Course:</label>
+    <select name="data[course]" id="course" required>
+      <option value="" disabled selected>Select a course</option>
+      <option value="Skill India CCAB">Skill India CCAB</option>
+      <option value="Advance Excel">Advance Excel</option>
+      <option value="Tally Prime">Tally Prime</option>
+      <option value="Web Designing">Web Designing</option>
+      <option value="Web Development">Web Development</option>
+      <option value="Hardware & Networking">Hardware & Networking</option>
+    </select>
+
+    <label for="fees">Fees:</label>
+    <input name="data[fees]" type="number" id="fees" required />
+
+    <label for="collected_by">Collected By:</label>
+    <select name="data[collected_by]" required>
+      <option value="" disabled selected>Select staff</option>
+      <option value="Mr. Ajay">Mr. Ajay</option>
+      <option value="Miss. Muskan">Miss. Muskan</option>
+      <option value="Mr. Praveen">Mr. Praveen</option>
+    </select>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <div id="log">
+    <h3>Submission Log</h3>
+    <div id="log-entries"></div>
+    <div class="log-buttons">
+      <button onclick="window.location.href='showfees.html'">Show All Fees Sheet</button>
+      <button onclick="window.location.href='timetable.html'">Show Timetable</button>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div id="loading-spinner">
+    <div class="spinner"></div>
+  </div>
+
+  <script>
+    // Auto-fill today's date
+    document.addEventListener("DOMContentLoaded", function () {
+      const today = new Date().toISOString().split("T")[0];
+      document.getElementById("date").value = today;
+      fetchLogFromSheetDB();
+    });
+
+    // Auto-fill fees based on course
+    const courseFees = {
+      "Skill India CCAB": 600,
+      "Advance Excel": 600,
+      "Tally Prime": 3000,
+      "Web Designing": 600,
+      "Web Development": 1500,
+      "Hardware & Networking": 600,
+    };
+
+    document.getElementById("course").addEventListener("change", function () {
+      const selectedCourse = this.value;
+      const feesInput = document.getElementById("fees");
+      feesInput.value = courseFees[selectedCourse] || "";
+    });
+
+    // Handle form submission with spinner
+    const form = document.getElementById("sheetdb-form");
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      document.getElementById("loading-spinner").style.display = "flex";
+
+      fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          alert("Success! Data submitted.");
+          fetchLogFromSheetDB();
+          form.reset();
+          document.getElementById("date").value = new Date().toISOString().split("T")[0];
+        })
+        .catch((error) => {
+          alert("Error! Please try again.");
+          console.error(error);
+        })
+        .finally(() => {
+          document.getElementById("loading-spinner").style.display = "none";
+        });
+    });
+
+    // Fetch recent logs with spinner
+    function fetchLogFromSheetDB() {
+      document.getElementById("loading-spinner").style.display = "flex";
+
+      fetch("https://sheetdb.io/api/v1/73xdu8w08ryfp")
+        .then((response) => response.json())
+        .then((data) => {
+          const logContainer = document.getElementById("log-entries");
+          logContainer.innerHTML = "";
+
+          data.sort((a, b) => new Date(b.date) - new Date(a.date));
+          data.slice(0, 10).forEach((entry) => {
+            const div = document.createElement("div");
+            div.className = "log-entry";
+            div.innerText = `${entry.date} | ${entry.name} | ${entry.course} | ₹${entry.fees} | Collected by: ${entry.collected_by}`;
+            logContainer.appendChild(div);
+          });
+        })
+        .catch((err) => {
+          console.error("Failed to load SheetDB data:", err);
+        })
+        .finally(() => {
+          document.getElementById("loading-spinner").style.display = "none";
         });
     }
   </script>
