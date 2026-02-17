@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel - DEP MN</title>
+
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to right, #74ebd5, #ACB6E5);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .admin-container {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 500px;
+    margin-top: 60px;
+    margin-bottom: 40px;
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+  }
+
+  .card {
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .create-card {
+    background: linear-gradient(135deg, #43cea2, #185a9d);
+  }
+
+  .reset-card {
+    background: linear-gradient(135deg, #ff9966, #ff5e62);
+  }
+
+  .logout-card {
+    background: linear-gradient(135deg, #ee0979, #ff6a00);
+    text-align: center;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    margin-top: 10px;
+    margin-bottom: 15px;
+  }
+
+  button {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  .white-btn {
+    background: #fff;
+    color: #333;
+  }
+
+  .footer-text {
+    font-size: 14px;
+    color: #ffffffcc;
+    text-align: center;
+    user-select: none;
+    letter-spacing: 1px;
+    padding: 10px 20px;
+    border-radius: 30px;
+    background: rgba(52, 152, 219, 0.3);
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.6);
+    max-width: 350px;
+    margin-bottom: 20px;
+  }
+</style>
+
+<!-- Firebase -->
+<script type="module">
+import { app } from "./firebase-config.js";
+import { 
+  getAuth,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const auth = getAuth(app);
+
+// Protect admin page (only admin@depmn.com can access)
+onAuthStateChanged(auth, (user) => {
+  if (!user || user.email !== "ajay.raikwar0786@gmail.com") {
+    window.location.href = "admin-login.html";
+  }
+});
+
+window.createUser = function(){
+  const email = document.getElementById("newEmail").value.trim();
+  const password = document.getElementById("newPassword").value.trim();
+
+  if(!email || !password){
+    alert("Please enter email and password.");
+    return;
+  }
+
+  createUserWithEmailAndPassword(auth, email, password)
+  .then(() => alert("User Created Successfully"))
+  .catch(error => alert(error.message));
+}
+
+window.resetPassword = function(){
+  const email = document.getElementById("resetEmail").value.trim();
+
+  if(!email){
+    alert("Please enter email.");
+    return;
+  }
+
+  sendPasswordResetEmail(auth, email)
+  .then(() => alert("Password Reset Link Sent"))
+  .catch(error => alert(error.message));
+}
+
+window.logout = function(){
+  signOut(auth).then(() => {
+    window.location.href = "admin-login.html";
+  });
+}
+</script>
+
+</head>
+<body>
+
+<div class="admin-container">
+  <h2>Admin Panel - DEP MN</h2>
+
+  <div class="card create-card">
+    <h3>Create New User</h3>
+    <input type="email" id="newEmail" placeholder="User Email">
+    <input type="password" id="newPassword" placeholder="Password">
+    <button class="white-btn" onclick="createUser()">Create User</button>
+  </div>
+
+  <div class="card reset-card">
+    <h3>Send Password Reset</h3>
+    <input type="email" id="resetEmail" placeholder="Enter User Email">
+    <button class="white-btn" onclick="resetPassword()">Send Reset Link</button>
+  </div>
+
+  <div class="card logout-card">
+    <button class="white-btn" onclick="logout()">Logout</button>
+  </div>
+
+</div>
+
+<div class="footer-text">
+  This Project is developed by Mr. Ajay Raikwar
+</div>
+
+</body>
+</html>
+
